@@ -1,0 +1,19 @@
+{
+  "task_id": "AUTO_TEST_01",
+  "assignee": "小研",
+  "status": "done",
+  "payload": {
+    "summary": "V1-Static Manifest 落地三步骤：(1) Agent 启动时将 SOUL.md 摘要写入 ~/.hermes/registry/<agent_name>.json；(2) 定义标准 Manifest 字段 {name, domain, capabilities[], chat_ids[], skills[], version}；(3) 主路由层实现简单 JSON 读取 + 关键字匹配进行能力分发。",
+    "key_findings": [
+      "V1 采用「启动时静态注册」模式，无需引入复杂消息队列",
+      "Manifest 格式已定义：{name, domain, capabilities[], chat_ids[], skills[], version}",
+      "Registry 存储路径：~/.hermes/registry/<agent_name>.json"
+    ],
+    "action_items": [
+      "各 Agent SOUL.md 添加启动时写入 registry 的逻辑",
+      "建立 ~/.hermes/registry/ 目录结构",
+      "主路由实现 JSON 读取 + 关键字匹配"
+    ]
+  },
+  "completed_at": "2026-04-27T04:07:48Z"
+}

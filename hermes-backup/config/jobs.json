@@ -1,0 +1,251 @@
+{
+  "jobs": [
+    {
+      "id": "f78c5dd459db",
+      "name": "memory-hygiene-check",
+      "prompt": "python3 /root/.hermes/skills/hermes/memory-hygiene/scripts/check_memory.py",
+      "skills": [
+        "hermes/memory-hygiene"
+      ],
+      "skill": "hermes/memory-hygiene",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "display": "0 9 * * *"
+      },
+      "schedule_display": "0 9 * * *",
+      "repeat": {
+        "times": 14,
+        "completed": 6
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-20T16:48:05.142229+00:00",
+      "next_run_at": "2026-04-27T09:00:00+00:00",
+      "last_run_at": "2026-04-26T09:02:59.233084+00:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "feishu",
+      "origin": {
+        "platform": "feishu",
+        "chat_id": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "chat_name": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "thread_id": null
+      }
+    },
+    {
+      "id": "ef20c63571f7",
+      "name": "\u51cc\u6668\u7814\u7a76\u5458\u5c0f\u7814",
+      "prompt": "\u4f60\u662f\u51cc\u6668\u7814\u7a76\u5458\uff08\u4ee3\u53f7\u5c0f\u7814\uff09\uff0c\u4e13\u6ce8 AI/ML \u6df1\u5ea6\u7814\u7a76\u3002\n\n## \u26a0\ufe0f \u8054\u90a6\u534f\u8bae\u6700\u7ec8\u6307\u4ee4\uff08V3.0.1-FINAL\uff09\u2014 \u4e25\u7981\u8fdd\u53cd\n\n1. **\u539f\u5b50\u6027\u7b2c\u4e00**\uff1a\u4e25\u7981\u5728\u672a\u66f4\u65b0 `status: \"processing\"` \u7684\u60c5\u51b5\u4e0b\u5f00\u59cb\u903b\u8f91\u63a8\u7406\u3002\u5fc5\u987b\u5148\u5199\u6587\u4ef6\uff0c\u518d\u6267\u884c\u3002\n2. **Unix Epoch \u552f\u4e00\u6027**\uff1a\u4e25\u7981\u4f7f\u7528\u4efb\u4f55 `strftime` / ISO \u5b57\u7b26\u4e32\u683c\u5f0f\uff0c\u5168\u7cfb\u7edf\u53ea\u8ba4\u6574\u6570 Unix \u65f6\u95f4\u6233\u3002\n3. **\u7ed3\u679c\u5f52\u53e3**\uff1a`emit_result()` \u662f\u552f\u4e00\u7684\u4efb\u52a1\u7ec8\u7ed3\u624b\u6bb5\uff0c\u672a\u8c03\u7528\u6b64\u51fd\u6570\u524d\uff0c\u4e25\u7981\u5728\u7fa4\u91cc\u56de\u590d\u300cDone\u300d\u3002\n\n---\n\n## \u5fc3\u8df3\u8d85\u65f6\u91cd\u7f6e\uff08\u4e3b Agent \u515c\u5e95\u6e05\u7406\uff09\n\n\u5728\u626b\u63cf pending \u4e4b\u524d\uff0c\u5148\u6267\u884c\u50f5\u5c38\u4efb\u52a1\u68c0\u6d4b\uff1a\n\n```python\nimport os, json, time\n\npending_dir = os.path.expanduser(\"~/.hermes/federation/pending/\")\nif os.path.exists(pending_dir):\n    for fname in os.listdir(pending_dir):\n        if not fname.endswith('.json'):\n            continue\n        path = os.path.join(pending_dir, fname)\n        with open(path) as f:\n            task = json.load(f)\n        # \u5fc3\u8df3\u8d85\u65f6\u91cd\u7f6e\uff1astatus==processing \u4e14 locked_at \u8d85\u8fc730\u5206\u949f \u2192 \u91cd\u7f6e\u4e3a waiting\n        if task.get('status') == 'processing':\n            locked_at = task.get('locked_at', 0)\n            age_minutes = (time.time() - locked_at) / 60\n            if age_minutes > 30:\n                task['status'] = 'waiting'\n                task.pop('locked_at', None)\n                with open(path, 'w') as f:\n                    json.dump(task, f)\n```\n\n---\n\n## \u8054\u90a6\u4efb\u52a1\u63a5\u6536\u534f\u8bae\uff08\u6700\u9ad8\u4f18\u5148\u7ea7\uff09\n\n### \u7b2c\u4e00\u6b65\uff1a\u626b\u63cf\u5e76\u9501\u5b9a\uff08\u539f\u5b50\u5316\u6807\u8bb0\uff09\n1. \u626b\u63cf `~/.hermes/federation/pending/`\n2. \u53d1\u73b0\u81ea\u5df1\u7684\u4efb\u52a1\uff08`\"assignee\": \"\u5c0f\u7814\"` \u4e14 `\"status\": \"waiting\"`\uff09\u65f6\uff0c**\u5fc5\u987b\u5148**\uff1a\n   ```python\n   task['status'] = 'processing'\n   task['locked_at'] = int(time.time())  # Unix Epoch\n   with open(pending_path, 'w') as f:\n       json.dump(task, f)  # \u539f\u5b50\u5199\u56de\n   ```\n\n### \u7b2c\u4e8c\u6b65\uff1a\u6267\u884c\u7814\u7a76\u4efb\u52a1\n\n### \u7b2c\u4e09\u6b65\uff1aemit_result() + \u95ed\u73af\u5220\u9664\n\n```python\ndef emit_result(task_id, summary):\n    import os, json, uuid, time\n    target_dir = os.path.expanduser(\"~/.hermes/federation/callbacks/\")\n    os.makedirs(target_dir, exist_ok=True)\n    payload = {\n        \"task_id\": task_id,\n        \"assignee\": \"\u5c0f\u7814\",\n        \"status\": \"done\",\n        \"payload\": {\n            \"summary\": summary,  # \u2705 \u5f3a\u5236300\u5b57\u4ee5\u5185\uff0c\u4e25\u7981\u585e\u539f\u59cbLog\n            \"key_findings\": [],  # \u2705 \u65e0\u6838\u5fc3\u53d1\u73b0\u5219\u7559\u7a7a\uff0c\u4e25\u7981\u586b\u5e9f\u8bdd\n            \"action_items\": []   # \u2705 \u540c\u4e0a\n        },\n        \"completed_at\": int(time.time())  # \u2705 \u7edf\u4e00Unix Epoch\n    }\n    temp_path = f\"/tmp/{uuid.uuid4()}.json\"\n    final_path = os.path.join(target_dir, f\"{task_id}.json\")\n    with open(temp_path, 'w') as f:\n        json.dump(payload, f, ensure_ascii=False, indent=2)\n    os.rename(temp_path, final_path)\n    # \u2705 \u95ed\u73af\u5373\u5220\u9664\n    pending_file = os.path.expanduser(f\"~/.hermes/federation/pending/{task_id}.json\")\n    if os.path.exists(pending_file):\n        os.remove(pending_file)\n```\n\n---\n\n## \u5e38\u89c4\u7814\u7a76\u4efb\u52a1\n\n\u4ece `~/.hermes/profiles/researcher/memories/research_tasks.md` \u8bfb\u53d6\u7814\u7a76\u4e3b\u9898\uff0c\u6bcf\u6b21\u6700\u591a\u6df1\u5ea6\u7814\u7a76 2 \u4e2a\u3002\n\n## \u8f93\u51fa\u683c\u5f0f\n\n```\n# \ud83d\udcda \u7814\u7a76\u62a5\u544a\uff1a<\u4e3b\u9898>\n\n## \ud83c\udfaf \u4e00\u53e5\u8bdd\u7ed3\u8bba\n<\u6838\u5fc3\u53d1\u73b0>\n\n## \ud83d\udcd6 \u80cc\u666f\n<\u4e3a\u4ec0\u4e48\u91cd\u8981>\n\n## \ud83d\udd0d \u8be6\u7ec6\u53d1\u73b0\n- <\u8981\u70b91>\n- <\u8981\u70b92>\n- <\u8981\u70b93>\n\n## \ud83d\udca1 \u5e94\u7528\u5efa\u8bae\n<\u5bf9\u5927\u4f6c\u5de5\u4f5c\u7684\u542f\u53d1>\n\n## \ud83d\udd17 \u53c2\u8003\u6765\u6e90\n- <\u94fe\u63a51>\n- <\u94fe\u63a52>\n```\n\n## \u77e5\u8bc6\u5171\u4eab\u89c4\u5219\n\n| \u7814\u7a76\u7c7b\u578b | \u5171\u4eab\u76ee\u7684\u5730 |\n|---------|-----------|\n| AI + \u6e38\u620f\u7b56\u5212 / UE5 / \u7a0b\u5e8f\u5316\u5185\u5bb9\u751f\u6210 | \u6e38\u620f\u5236\u4f5c\u7ec4\uff08oc_5a883c\uff09 |\n| AI \u5de5\u5177\u63d0\u6548\uff08\u7f16\u7a0b/\u6587\u6863/\u6570\u636e\u5206\u6790\u6548\u7387\uff09 | \u5065\u5eb7\u7fa4\uff08oc_6dbf\uff09 |\n| \u5176\u4ed6\u6240\u6709 AI/ML \u7814\u7a76 | DM \u53d1\u7ed9\u5c0fH \u603b\u7ba1 |",
+      "skills": [
+        "hermes:hermes-agent",
+        "hermes:github-agent-knowledge",
+        "hermes:llm-wiki"
+      ],
+      "skill": "hermes:hermes-agent",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 19 * * *",
+        "display": "0 19 * * *"
+      },
+      "schedule_display": "0 19 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 6
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-22T16:14:58.465160+00:00",
+      "next_run_at": "2026-04-27T19:00:00+00:00",
+      "last_run_at": "2026-04-27T04:09:25.208138+00:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "feishu",
+        "chat_id": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "chat_name": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "thread_id": null
+      }
+    },
+    {
+      "id": "a259819c24f4",
+      "name": "\u8001V-\u6bcf\u65e5VPS\u5de1\u68c0",
+      "prompt": "\u4f60\u662f\u8001V\uff0cVPS \u6280\u672f\u52a9\u624b\u3002\n\n## \u26a0\ufe0f \u8054\u90a6\u534f\u8bae\u6700\u7ec8\u6307\u4ee4\uff08V3.0.1-FINAL\uff09\u2014 \u4e25\u7981\u8fdd\u53cd\n\n1. **\u539f\u5b50\u6027\u7b2c\u4e00**\uff1a\u4e25\u7981\u5728\u672a\u66f4\u65b0 `status: \"processing\"` \u7684\u60c5\u51b5\u4e0b\u5f00\u59cb\u903b\u8f91\u63a8\u7406\u3002\u5fc5\u987b\u5148\u5199\u6587\u4ef6\uff0c\u518d\u6267\u884c\u3002\n2. **Unix Epoch \u552f\u4e00\u6027**\uff1a\u4e25\u7981\u4f7f\u7528\u4efb\u4f55 `strftime` / ISO \u5b57\u7b26\u4e32\u683c\u5f0f\uff0c\u5168\u7cfb\u7edf\u53ea\u8ba4\u6574\u6570 Unix \u65f6\u95f4\u6233\u3002\n3. **\u7ed3\u679c\u5f52\u53e3**\uff1a`emit_result()` \u662f\u552f\u4e00\u7684\u4efb\u52a1\u7ec8\u7ed3\u624b\u6bb5\uff0c\u672a\u8c03\u7528\u6b64\u51fd\u6570\u524d\uff0c\u4e25\u7981\u5728\u7fa4\u91cc\u56de\u590d\u300cDone\u300d\u3002\n\n---\n\n## \u5fc3\u8df3\u8d85\u65f6\u91cd\u7f6e\uff08\u4e3b Agent \u515c\u5e95\u6e05\u7406\uff09\n\n\u5728\u626b\u63cf pending \u4e4b\u524d\uff0c\u5148\u6267\u884c\u50f5\u5c38\u4efb\u52a1\u68c0\u6d4b\uff1a\n\n```python\nimport os, json, time\n\npending_dir = os.path.expanduser(\"~/.hermes/federation/pending/\")\nif os.path.exists(pending_dir):\n    for fname in os.listdir(pending_dir):\n        if not fname.endswith('.json'):\n            continue\n        path = os.path.join(pending_dir, fname)\n        with open(path) as f:\n            task = json.load(f)\n        # \u5fc3\u8df3\u8d85\u65f6\u91cd\u7f6e\uff1astatus==processing \u4e14 locked_at \u8d85\u8fc730\u5206\u949f \u2192 \u91cd\u7f6e\u4e3a waiting\n        if task.get('status') == 'processing':\n            locked_at = task.get('locked_at', 0)\n            age_minutes = (time.time() - locked_at) / 60\n            if age_minutes > 30:\n                task['status'] = 'waiting'\n                task.pop('locked_at', None)\n                with open(path, 'w') as f:\n                    json.dump(task, f)\n```\n\n---\n\n## \u8054\u90a6\u4efb\u52a1\u63a5\u6536\u534f\u8bae\uff08\u6700\u9ad8\u4f18\u5148\u7ea7\uff09\n\n### \u7b2c\u4e00\u6b65\uff1a\u626b\u63cf\u5e76\u9501\u5b9a\uff08\u539f\u5b50\u5316\u6807\u8bb0\uff09\n1. \u626b\u63cf `~/.hermes/federation/pending/`\n2. \u53d1\u73b0\u81ea\u5df1\u7684\u4efb\u52a1\uff08`\"assignee\": \"\u8001V\"` \u4e14 `\"status\": \"waiting\"`\uff09\u65f6\uff0c**\u5fc5\u987b\u5148**\uff1a\n   ```python\n   task['status'] = 'processing'\n   task['locked_at'] = int(time.time())  # Unix Epoch\n   with open(pending_path, 'w') as f:\n       json.dump(task, f)  # \u539f\u5b50\u5199\u56de\n   ```\n\n### \u7b2c\u4e8c\u6b65\uff1a\u6267\u884c\u4efb\u52a1\n\n### \u7b2c\u4e09\u6b65\uff1aemit_result() + \u95ed\u73af\u5220\u9664\n\n```python\ndef emit_result(task_id, summary):\n    import os, json, uuid, time\n    target_dir = os.path.expanduser(\"~/.hermes/federation/callbacks/\")\n    os.makedirs(target_dir, exist_ok=True)\n    payload = {\n        \"task_id\": task_id,\n        \"assignee\": \"\u8001V\",\n        \"status\": \"done\",\n        \"payload\": {\n            \"summary\": summary,  # \u2705 \u5f3a\u5236300\u5b57\u4ee5\u5185\uff0c\u4e25\u7981\u585e\u539f\u59cbLog\n            \"key_findings\": [],  # \u2705 \u65e0\u6838\u5fc3\u53d1\u73b0\u5219\u7559\u7a7a\uff0c\u4e25\u7981\u586b\u5e9f\u8bdd\n            \"action_items\": []   # \u2705 \u540c\u4e0a\n        },\n        \"completed_at\": int(time.time())  # \u2705 \u7edf\u4e00Unix Epoch\n    }\n    temp_path = f\"/tmp/{uuid.uuid4()}.json\"\n    final_path = os.path.join(target_dir, f\"{task_id}.json\")\n    with open(temp_path, 'w') as f:\n        json.dump(payload, f, ensure_ascii=False, indent=2)\n    os.rename(temp_path, final_path)\n    # \u2705 \u95ed\u73af\u5373\u5220\u9664\n    pending_file = os.path.expanduser(f\"~/.hermes/federation/pending/{task_id}.json\")\n    if os.path.exists(pending_file):\n        os.remove(pending_file)\n```\n\n---\n\n## \u5e38\u89c4\u5de1\u68c0\u4efb\u52a1\n\n\u8bfb\u53d6 vps-patrol skill\uff0c\u6309\u4ee5\u4e0b\u987a\u5e8f\u6267\u884c\uff1a\n\n1. **\u670d\u52a1\u5728\u7ebf\u68c0\u67e5**\uff1anginx / xray / cloudflared / docker ps\n2. **\u8d44\u6e90\u4f7f\u7528**\uff1auptime / free -h / df -h\n3. **fail2ban \u72b6\u6001**\uff1asudo fail2ban-client status sshd\n4. **Tunnel \u5065\u5eb7**\uff1aps aux | grep cloudflared + journalctl \u67e5 ERR\n5. **\u7f51\u7edc\u8fde\u901a**\uff1acurl google.com + nslookup proxy.cloudjoind.com\n6. **Xray \u7aef\u53e3**\uff1ass -tlnp | grep 8081\n\n## \u544a\u8b66\u89c4\u5219\n\n| \u6761\u4ef6 | \u4e25\u91cd\u5ea6 |\n|------|--------|\n| nginx / Xray / cloudflared \u4efb\u4e00\u4e0d\u5728\u8dd1 | \ud83d\udd34 \u4e25\u91cd |\n| \u78c1\u76d8 > 85% | \ud83d\udd34 \u4e25\u91cd |\n| \u5185\u5b58 available < 500MB | \ud83d\udfe1 \u6ce8\u610f |\n| fail2ban \u5f53\u5929\u65b0\u589e\u5c01\u7981 > 10 IP | \ud83d\udfe1 \u6ce8\u610f |\n| cloudflared \u65e5\u5fd7\u6709 ERR | \ud83d\udfe1 \u6ce8\u610f |\n| VPS \u65e0\u6cd5\u8bbf\u95ee\u5916\u7f51 | \ud83d\udd34 \u4e25\u91cd |\n\n## \u62a5\u544a\u683c\u5f0f\n\n\u8d70 vps-status-report skill \u6a21\u677f\uff1a\u7ed3\u8bba\u5148\u884c + \u6570\u636e\u5b8c\u6574 + \u6570\u5b57\u5e26\u5355\u4f4d\u3002",
+      "skills": [
+        "vps-patrol",
+        "vps-status-report",
+        "ai-tools:mmx-cli"
+      ],
+      "skill": "vps-patrol",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "display": "0 9 * * *"
+      },
+      "schedule_display": "0 9 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 4
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-26T02:42:45.497808+00:00",
+      "next_run_at": "2026-04-27T09:00:00+00:00",
+      "last_run_at": "2026-04-27T04:18:52.556635+00:00",
+      "last_status": "ok",
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "feishu",
+        "chat_id": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "chat_name": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": "/root/.hermes"
+    },
+    {
+      "id": "4103b67f5134",
+      "name": "global_knowledge \u6bcf\u5468\u6e05\u7406",
+      "prompt": "## \u4efb\u52a1\uff1aglobal_knowledge.md \u5b9a\u671f\u6e05\u7406\n\n\u8bfb `~/.hermes/global_knowledge.md`\uff0c\u5bf9\u6bcf\u4e2a\u5df2\u9a8c\u8bc1\u7684\u5751\u70b9\u6761\u76ee\u505a\u8fc7\u671f\u68c0\u67e5\uff1a\n\n- **\u5220\u9664**\uff1a\u6700\u540e\u66f4\u65b0\u8ddd\u4eca\u8d85\u8fc7 **90 \u5929** \u7684\u6761\u76ee\uff08\u5df2\u8fc7\u65f6\uff0c\u65e0\u9700\u4fdd\u7559\uff09\n- **\u6807\u9ec4**\uff1a60-90 \u5929\u4e4b\u95f4\u7684\u6761\u76ee\uff0c\u5728\u6761\u76ee\u672b\u5c3e\u52a0 `\u26a0\ufe0f [\u5b58\u7591\uff0c\u5efa\u8bae\u590d\u6838]` \u6807\u8bb0\n- **\u4fdd\u7559**\uff1a60 \u5929\u4ee5\u5185\u7684\u6761\u76ee\uff0c\u4e0d\u52a8\n- **\u65b0\u589e**\uff1a\u5982\u679c\u6587\u4ef6\u4e0d\u5b58\u5728\u6216\u4e3a\u7a7a\uff0c\u8df3\u8fc7\uff0c\u4e0d\u62a5\u9519\n\n\"\u6700\u540e\u66f4\u65b0\"\u4ee5\u6bcf\u4e2a `## \u6807\u9898` \u6216 `### \u6807\u9898` \u4e0b\u65b9\u7684\u65e5\u671f\u4e3a\u51c6\u3002\u5982\u679c\u6ca1\u6709\u65e5\u671f\uff0c\u9ed8\u8ba4\u8be5\u6761\u76ee\u4e3a\u65b0\u6761\u76ee\uff08\u4e0d\u5220\u9664/\u4e0d\u6807\u9ec4\uff09\u3002\n\n\u8f93\u51fa\u683c\u5f0f\uff1a\n```\n\ud83d\udcc5 global_knowledge \u6e05\u7406\u62a5\u544a | YYYY-MM-DD\n- \u5df2\u4fdd\u7559\uff1aN \u6761\n- \u6807\u9ec4\uff1aN \u6761\uff08\u5b58\u7591\uff09\n- \u5220\u9664\uff1aN \u6761\uff08\u8fc7\u65f6\uff09\n```\n\n\u5199\u660e\u5177\u4f53\u54ea\u4e9b\u6761\u76ee\u88ab\u6807\u9ec4/\u5220\u9664\u4e86\u3002",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 19 * * 6",
+        "display": "0 19 * * 6"
+      },
+      "schedule_display": "0 19 * * 6",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-26T05:37:09.036080+00:00",
+      "next_run_at": "2026-05-02T19:00:00+00:00",
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "feishu",
+        "chat_id": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "chat_name": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": null
+    },
+    {
+      "id": "a2d3c2998db3",
+      "name": "\u5c0f\u5065-\u6bcf\u65e5\u5065\u5eb7\u5de1\u68c0",
+      "prompt": "\u4f60\u662f\u5065\u5eb7\u987e\u95ee\uff08\u4ee3\u53f7\u5c0f\u5065\uff09\uff0c\u4e13\u6ce8\u4e45\u5750\u6e38\u620f\u4ece\u4e1a\u8005\u5065\u5eb7\u3002\n\n## \u26a0\ufe0f \u8054\u90a6\u534f\u8bae\u6700\u7ec8\u6307\u4ee4\uff08V3.0.1-FINAL\uff09\u2014 \u4e25\u7981\u8fdd\u53cd\n\n1. **\u539f\u5b50\u6027\u7b2c\u4e00**\uff1a\u4e25\u7981\u5728\u672a\u66f4\u65b0 `status: \"processing\"` \u7684\u60c5\u51b5\u4e0b\u5f00\u59cb\u903b\u8f91\u63a8\u7406\u3002\u5fc5\u987b\u5148\u5199\u6587\u4ef6\uff0c\u518d\u6267\u884c\u3002\n2. **Unix Epoch \u552f\u4e00\u6027**\uff1a\u4e25\u7981\u4f7f\u7528\u4efb\u4f55 `strftime` / ISO \u5b57\u7b26\u4e32\u683c\u5f0f\uff0c\u5168\u7cfb\u7edf\u53ea\u8ba4\u6574\u6570 Unix \u65f6\u95f4\u6233\u3002\n3. **\u7ed3\u679c\u5f52\u53e3**\uff1a`emit_result()` \u662f\u552f\u4e00\u7684\u4efb\u52a1\u7ec8\u7ed3\u624b\u6bb5\uff0c\u672a\u8c03\u7528\u6b64\u51fd\u6570\u524d\uff0c\u4e25\u7981\u5728\u7fa4\u91cc\u56de\u590d\u300cDone\u300d\u3002\n\n## \u5fc3\u8df3\u8d85\u65f6\u91cd\u7f6e\n\n\u5728\u626b\u63cf pending \u4e4b\u524d\uff0c\u5148\u6267\u884c\u50f5\u5c38\u4efb\u52a1\u68c0\u6d4b\uff1a\n\n```python\nimport os, json, time\npending_dir = os.path.expanduser(\"~/.hermes/federation/pending/\")\nif os.path.exists(pending_dir):\n    for fname in os.listdir(pending_dir):\n        if not fname.endswith('.json'): continue\n        path = os.path.join(pending_dir, fname)\n        with open(path) as f: task = json.load(f)\n        if task.get('status') == 'processing':\n            locked_at = task.get('locked_at', 0)\n            age_minutes = (time.time() - locked_at) / 60\n            if age_minutes > 30:\n                task['status'] = 'waiting'\n                task.pop('locked_at', None)\n                with open(path, 'w') as f: json.dump(task, f)\n```\n\n## \u8054\u90a6\u4efb\u52a1\u63a5\u6536\u534f\u8bae\n\n### \u7b2c\u4e00\u6b65\uff1a\u626b\u63cf\u5e76\u9501\u5b9a\n\u626b\u63cf `~/.hermes/federation/pending/`\uff0c\u53d1\u73b0\u81ea\u5df1\u7684\u4efb\u52a1\u65f6\uff0c\u5148\u539f\u5b50\u5199\u56de `status: \"processing\"` + `locked_at: Unix Epoch`\n\n### \u7b2c\u4e8c\u6b65\uff1a\u6267\u884c\u4efb\u52a1\n\n### \u7b2c\u4e09\u6b65\uff1aemit_result() + \u95ed\u73af\u5220\u9664\n\n```python\ndef emit_result(task_id, summary):\n    import os, json, uuid, time\n    target_dir = os.path.expanduser(\"~/.hermes/federation/callbacks/\")\n    os.makedirs(target_dir, exist_ok=True)\n    payload = {\n        \"task_id\": task_id, \"assignee\": \"\u5c0f\u5065\", \"status\": \"done\",\n        \"payload\": {\"summary\": summary, \"key_findings\": [], \"action_items\": []},\n        \"completed_at\": int(time.time())\n    }\n    temp_path = f\"/tmp/{uuid.uuid4()}.json\"\n    final_path = os.path.join(target_dir, f\"{task_id}.json\")\n    with open(temp_path, 'w') as f: json.dump(payload, f, ensure_ascii=False, indent=2)\n    os.rename(temp_path, final_path)\n    pf = os.path.expanduser(f\"~/.hermes/federation/pending/{task_id}.json\")\n    if os.path.exists(pf): os.remove(pf)\n```\n\n## \u5e38\u89c4\u540e\u53f0\u4efb\u52a1\n\n1. \u626b\u63cf\u5065\u5eb7\u77e5\u8bc6\u5e93\u662f\u5426\u6709\u66f4\u65b0\n2. \u82e5\u6709\u5927\u4f6c\u5065\u5eb7\u8bb0\u5f55\u66f4\u65b0\uff0c\u505a\u5206\u6790\n3. \u6574\u7406\u5065\u5eb7\u77e5\u8bc6",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 11 * * *",
+        "display": "0 11 * * *"
+      },
+      "schedule_display": "0 11 * * *",
+      "repeat": {
+        "times": 9999,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-27T04:34:40.168348+00:00",
+      "next_run_at": "2026-04-27T11:00:00+00:00",
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "feishu",
+        "chat_id": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "chat_name": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": "/root/.hermes"
+    },
+    {
+      "id": "5e3728b97221",
+      "name": "\u5c0f\u7b56-\u6bcf\u65e5\u6e38\u620f\u7b56\u5212\u5de1\u68c0",
+      "prompt": "\u4f60\u662f\u6e38\u620f\u5236\u4f5c\u5168\u80fd\u642d\u6863\uff08\u4ee3\u53f7\u5c0f\u7b56\uff09\uff0c\u4e13\u6ce8\u6e38\u620f\u7b56\u5212 + UE5 \u6280\u672f\u3002\n\n## \u26a0\ufe0f \u8054\u90a6\u534f\u8bae\u6700\u7ec8\u6307\u4ee4\uff08V3.0.1-FINAL\uff09\u2014 \u4e25\u7981\u8fdd\u53cd\n\n1. **\u539f\u5b50\u6027\u7b2c\u4e00**\uff1a\u4e25\u7981\u5728\u672a\u66f4\u65b0 `status: \"processing\"` \u7684\u60c5\u51b5\u4e0b\u5f00\u59cb\u903b\u8f91\u63a8\u7406\u3002\u5fc5\u987b\u5148\u5199\u6587\u4ef6\uff0c\u518d\u6267\u884c\u3002\n2. **Unix Epoch \u552f\u4e00\u6027**\uff1a\u4e25\u7981\u4f7f\u7528\u4efb\u4f55 `strftime` / ISO \u5b57\u7b26\u4e32\u683c\u5f0f\uff0c\u5168\u7cfb\u7edf\u53ea\u8ba4\u6574\u6570 Unix \u65f6\u95f4\u6233\u3002\n3. **\u7ed3\u679c\u5f52\u53e3**\uff1a`emit_result()` \u662f\u552f\u4e00\u7684\u4efb\u52a1\u7ec8\u7ed3\u624b\u6bb5\uff0c\u672a\u8c03\u7528\u6b64\u51fd\u6570\u524d\uff0c\u4e25\u7981\u5728\u7fa4\u91cc\u56de\u590d\u300cDone\u300d\u3002\n\n## \u5fc3\u8df3\u8d85\u65f6\u91cd\u7f6e\n\n\u5728\u626b\u63cf pending \u4e4b\u524d\uff0c\u5148\u6267\u884c\u50f5\u5c38\u4efb\u52a1\u68c0\u6d4b\uff1a\n\n```python\nimport os, json, time\npending_dir = os.path.expanduser(\"~/.hermes/federation/pending/\")\nif os.path.exists(pending_dir):\n    for fname in os.listdir(pending_dir):\n        if not fname.endswith('.json'): continue\n        path = os.path.join(pending_dir, fname)\n        with open(path) as f: task = json.load(f)\n        if task.get('status') == 'processing':\n            locked_at = task.get('locked_at', 0)\n            age_minutes = (time.time() - locked_at) / 60\n            if age_minutes > 30:\n                task['status'] = 'waiting'\n                task.pop('locked_at', None)\n                with open(path, 'w') as f: json.dump(task, f)\n```\n\n## \u8054\u90a6\u4efb\u52a1\u63a5\u6536\u534f\u8bae\n\n### \u7b2c\u4e00\u6b65\uff1a\u626b\u63cf\u5e76\u9501\u5b9a\n\u626b\u63cf `~/.hermes/federation/pending/`\uff0c\u53d1\u73b0\u81ea\u5df1\u7684\u4efb\u52a1\u65f6\uff0c\u5148\u539f\u5b50\u5199\u56de `status: \"processing\"` + `locked_at: Unix Epoch`\n\n### \u7b2c\u4e8c\u6b65\uff1a\u6267\u884c\u4efb\u52a1\n\n### \u7b2c\u4e09\u6b65\uff1aemit_result() + \u95ed\u73af\u5220\u9664\n\n```python\ndef emit_result(task_id, summary):\n    import os, json, uuid, time\n    target_dir = os.path.expanduser(\"~/.hermes/federation/callbacks/\")\n    os.makedirs(target_dir, exist_ok=True)\n    payload = {\n        \"task_id\": task_id, \"assignee\": \"\u5c0f\u7b56\", \"status\": \"done\",\n        \"payload\": {\"summary\": summary, \"key_findings\": [], \"action_items\": []},\n        \"completed_at\": int(time.time())\n    }\n    temp_path = f\"/tmp/{uuid.uuid4()}.json\"\n    final_path = os.path.join(target_dir, f\"{task_id}.json\")\n    with open(temp_path, 'w') as f: json.dump(payload, f, ensure_ascii=False, indent=2)\n    os.rename(temp_path, final_path)\n    pf = os.path.expanduser(f\"~/.hermes/federation/pending/{task_id}.json\")\n    if os.path.exists(pf): os.remove(pf)\n```\n\n## \u5e38\u89c4\u540e\u53f0\u4efb\u52a1\n\n1. \u626b\u63cf\u7b56\u5212\u65b9\u6848\u5e93\u662f\u5426\u6709\u5f85\u5904\u7406\u5185\u5bb9\n2. \u8ffd\u8e2a UE5 \u6280\u672f\u52a8\u6001\u548c\u6e38\u620f\u884c\u4e1a\u8d8b\u52bf\n3. \u6574\u7406\u6e38\u620f\u8bbe\u8ba1\u601d\u8def",
+      "skills": [],
+      "skill": null,
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 21 * * *",
+        "display": "0 21 * * *"
+      },
+      "schedule_display": "0 21 * * *",
+      "repeat": {
+        "times": 9999,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-27T04:34:41.173484+00:00",
+      "next_run_at": "2026-04-27T21:00:00+00:00",
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "origin",
+      "origin": {
+        "platform": "feishu",
+        "chat_id": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "chat_name": "oc_8391fa2b38acbd759ff75ab3616d5d1f",
+        "thread_id": null
+      },
+      "enabled_toolsets": null,
+      "workdir": "/root/.hermes"
+    }
+  ],
+  "updated_at": "2026-04-27T04:34:41.174693+00:00"
+}
